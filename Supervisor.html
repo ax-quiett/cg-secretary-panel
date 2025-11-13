@@ -1,0 +1,1652 @@
+SUPERVISOR.HTML
+
+
+
+
+<!-- Supervisor — Capital Group · Старший секретарь
+
+
+     (2025-11-12 · statuses: aggregates columns; refresh targets common bar; absences highlight in planner; header tidy) -->
+
+
+<!doctype html>
+
+
+<html lang="ru">
+
+
+<head>
+
+
+<meta charset="utf-8" />
+
+
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+
+
+<title>Capital Group · Старший секретарь</title>
+
+
+<style>
+
+
+  :root { --bg:#101217; --card:#15171c; --muted:#8a93a6; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444; --link:#60a5fa; --line:#232634; }
+
+
+  html,body{margin:0;padding:0;background:var(--bg);color:#e5e7eb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial}
+
+
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+
+
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+
+
+  .tab{padding:10px 14px;background:#101218;border:1px solid var(--line);border-radius:10px;cursor:pointer;user-select:none;color:#e8ebf2}
+
+
+  .tab.active{background:var(--card);border-color:#394050}
+
+
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
+
+  .split{display:flex;justify-content:space-between;align-items:center;gap:12px}
+
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+
+
+  .btn{padding:8px 12px;border-radius:10px;border:1px solid #3a4156;background:#151a28;color:#ffffff;cursor:pointer}
+
+
+  .btn[disabled]{opacity:.6;cursor:not-allowed}
+
+
+  .btn.primary{border-color:#4c5a86;background:#1b2440}
+
+
+  .btn.ok{border-color:#1d7a45;background:#0f2017}
+
+
+  .btn.warn{border-color:#b57a12;background:#2a1c06}
+
+
+  .btn.err{border-color:#b32626;background:#2a0f0f}
+
+
+  .table{width:100%;border-collapse:collapse;table-layout:fixed}
+
+
+  .table th,.table td{border-bottom:1px solid var(--line);padding:8px 6px;font-size:14px;vertical-align:middle}
+
+
+  .table th{font-weight:600}
+
+
+  .table td.time{font-variant-numeric:tabular-nums;width:110px;white-space:nowrap}
+
+
+  .table td.center{text-align:center}
+
+
+  .muted{color:var(--muted);font-size:12px}
+
+
+  .small{font-size:12px}
+
+
+  .status-dot{display:inline-block;width:8px;height:8px;border-radius:99px;margin-right:6px;vertical-align:middle}
+
+
+  .dot-off{background:#475569}.dot-online{background:#22c55e}.dot-lunch{background:#f59e0b}.dot-break{background:#f97316}
+
+
+  .hide{display:none !important}
+
+
+  .toast{position:fixed;right:12px;bottom:12px;background:#101218;border:1px solid #32384a;color:#e5e7eb;border-radius:12px;padding:10px 12px;max-width:340px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+
+
+  input,select{background:#0e1117;color:#e5e7eb;border:1px solid #2b3243;border-radius:10px;padding:8px 10px}
+
+
+  .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #2a3142;background:#11141b;border-radius:999px;padding:4px 8px}
+
+
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid #64748b;border-top-color:transparent;border-radius:50%;animation:rot .8s linear infinite}
+
+
+  @keyframes rot{to{transform:rotate(360deg)}}
+
+
+  /* Planner decoration (absences) */
+
+
+  .abs-cell{position:relative;background:#1a1313;border:1px dashed #533;}
+
+
+  .abs-cell.badge::after{content:attr(data-abs);position:absolute;top:6px;right:6px;font-size:10px;color:#fca5a5;background:#3b0a0a;border:1px solid #7f1d1d;border-radius:999px;padding:2px 6px}
+
+
+  .abs-sick{background:#181130;border:1px dashed #445}
+
+
+  .abs-sick.badge::after{background:#1f1446;color:#c7bfff;border-color:#5b4fb3}
+
+
+  .plan-cell select{width:100%;padding:6px 8px;border-radius:8px;border:1px solid #2b3243;background:#0f1420;color:#e5e7eb}
+
+
+</style>
+
+
+</head>
+
+
+<body>
+
+
+<div class="wrap">
+
+
+
+
+
+
+  <div class="tabs" id="tabs">
+
+
+    <button class="tab active" data-tab="statuses">📊 Статусы</button>
+
+
+    <button class="tab" data-tab="roles">🗓 Роли</button>
+
+
+    <button class="tab" data-tab="planner">📅 Планер</button>
+
+
+    <button class="tab" data-tab="absences">🧰 Отсутствия</button>
+
+
+    <button class="tab" data-tab="qc">🎧 QC</button>
+
+
+    <button class="tab" data-tab="links">🔗 Доступы</button>
+
+
+    <button class="tab" data-tab="logs">🛠 Логи</button>
+
+
+  </div>
+
+
+
+
+
+
+  <!-- TAB: STATUSES -->
+
+
+  <section id="tab-statuses">
+
+
+    <!-- Быстрый статус старшего (как отдельный, компактный блок) -->
+
+
+    <div class="card row small" id="quick-row">
+
+
+      <span class="muted">Ваш быстрый статус:</span>
+
+
+      <button class="btn ok"   data-act="IN"          id="q-in">✅ На линии</button>
+
+
+      <button class="btn warn" data-act="LUNCH_START" id="q-lunch">🍽 Обед</button>
+
+
+      <button class="btn"      data-act="BREAK_START" id="q-break">☕ Перерыв</button>
+
+
+      <button class="btn"      data-act="LUNCH_END"   id="q-lunch-end">↩︎ С обеда</button>
+
+
+      <button class="btn"      data-act="BREAK_END"   id="q-break-end">↩︎ С перерыва</button>
+
+
+      <button class="btn err"  data-act="OUT"         id="q-off">⛔ OFF</button>
+
+
+    </div>
+
+
+
+
+
+
+    <!-- Общий статусбар (хедер вкладки): справа — я, статус и QC14; тут же refresh + автообновление -->
+
+
+    <div class="card">
+
+
+      <div class="split">
+
+
+        <div class="row small" style="gap:8px">
+
+
+          <button class="btn" id="btn-refresh">🔄 Обновить</button>
+
+
+          <button class="btn" id="btn-snapshot">📸 Снимок</button>
+
+
+          <label class="row small" style="gap:6px">
+
+
+            <input type="checkbox" id="autoSync"/> авто-обновление
+
+
+          </label>
+
+
+        </div>
+
+
+        <div class="row small" style="gap:10px">
+
+
+          <span class="chip">👤 <b><?= ctx.name||'—' ?></b></span>
+
+
+          <span class="chip">Статус: <span id="myStatusLabel">—</span> <span id="myStatusSpin" class="spin hide"></span></span>
+
+
+          <span class="chip">⭐ Мой QC14: <span id="qcAvgSelf">—</span></span>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+
+
+
+
+    <div class="card">
+
+
+      <div class="muted" style="margin-bottom:8px">Список сотрудников и их текущие статусы</div>
+
+
+      <table class="table" id="tbl-statuses">
+
+
+        <thead>
+
+
+          <tr>
+
+
+            <th style="width:20%">ФИО</th>
+
+
+            <th style="width:14%">Роль сейчас</th>
+
+
+            <th style="width:14%">Статус</th>
+
+
+            <th style="width:10%">Приход</th>
+
+
+            <th style="width:8%">Маркер опоздания</th>
+
+
+            <th style="width:10%">Обед (мин)</th>
+
+
+            <th style="width:10%">Перерыв (мин)</th>
+
+
+            <th>Действия</th>
+
+
+          </tr>
+
+
+        </thead>
+
+
+        <tbody><tr><td colspan="8" class="muted">Загрузка…</td></tr></tbody>
+
+
+      </table>
+
+
+    </div>
+
+
+  </section>
+
+
+
+
+
+
+  <!-- TAB: ROLES -->
+
+
+  <section id="tab-roles" class="hide">
+
+
+    <div class="card">
+
+
+      <div class="row">
+
+
+        <label>Дата: <input type="date" id="roles-date" /></label>
+
+
+        <button class="btn" id="roles-show">🔄 Обновить</button>
+
+
+        <button class="btn" id="roles-snap">🧪 Снимок</button>
+
+
+      </div>
+
+
+      <div id="roles-grid" class="small"><span class="muted">Выберите дату и нажмите «Показать»</span></div>
+
+
+    </div>
+
+
+  </section>
+
+
+
+
+
+
+  <!-- TAB: PLANNER -->
+
+
+  <section id="tab-planner" class="hide">
+
+
+    <div class="card">
+
+
+      <div class="row">
+
+
+        <label>Якорная дата недели: <input type="date" id="week-anchor" /></label>
+
+
+        <button class="btn" id="week-show">🔄 Обновить</button>
+
+
+        <button class="btn" id="week-auto">⚙️ Автоплан недели</button>
+
+
+        <button class="btn" id="week-clear">🧹 Очистить черновик</button>
+
+
+        <button class="btn primary" id="week-publish">📤 Перезаписать в Roster</button>
+
+
+      </div>
+
+
+      <div class="muted" id="planner-dirty" style="margin-top:6px">Нет несохранённых изменений</div>
+
+
+      <div id="planner-grid" class="small" style="margin-top:8px"><span class="muted">Пока пусто</span></div>
+
+
+    </div>
+
+
+  </section>
+
+
+
+
+
+
+  <!-- TAB: ABSENCES -->
+
+
+  <section id="tab-absences" class="hide">
+
+
+    <div class="card">
+
+
+      <div class="row">
+
+
+        <label>С: <input type="date" id="abs-from" /></label>
+
+
+        <label>по: <input type="date" id="abs-to" /></label>
+
+
+        <select id="abs-type"><option value="SICK">БОЛЬНИЧНЫЙ</option><option value="VACATION">ОТПУСК</option></select>
+
+
+        <select id="abs-name"></select>
+
+
+        <button class="btn" id="abs-add">➕ Добавить диапазон</button>
+
+
+        <button class="btn" id="abs-show">🔄 Обновить</button>
+
+
+        <button class="btn" id="hol-sync">🇷🇺 Праздники РФ</button>
+
+
+      </div>
+
+
+      <table class="table" id="tbl-abs">
+
+
+        <thead><tr><th>Дата</th><th>Сотрудник</th><th>Тип</th></tr></thead>
+
+
+        <tbody></tbody>
+
+
+      </table>
+
+
+    </div>
+
+
+  </section>
+
+
+
+
+
+
+  <!-- TAB: QC -->
+
+
+  <section id="tab-qc" class="hide">
+
+
+    <div class="card">
+
+
+      <div class="row">
+
+
+        <span>Средняя оценка за 14 дней:</span>
+
+
+        <span id="qc-avg-2">—</span>
+
+
+        <button class="btn" id="qc-show">🔄 Обновить оценки</button>
+
+
+      </div>
+
+
+      <div class="row small" style="margin-top:8px">
+
+
+        <select id="qc-emp"></select>
+
+
+        <select id="qc-rev"></select>
+
+
+        <input id="qc-date" type="date" />
+
+
+        <input id="qc-call" placeholder="CallID" />
+
+
+        <input id="qc-tone" type="number" min="0" max="10" step="1" placeholder="Тон" style="width:90px" />
+
+
+        <input id="qc-script" type="number" min="0" max="10" step="1" placeholder="Скрипт" style="width:90px" />
+
+
+        <input id="qc-par" type="number" min="0" max="10" step="1" placeholder="Паразиты" style="width:110px" />
+
+
+        <input id="qc-comment" placeholder="Комментарий" style="min-width:220px" />
+
+
+        <button class="btn primary" id="qc-save">💾 Сохранить</button>
+
+
+      </div>
+
+
+      <table class="table" id="tbl-qc" style="margin-top:8px">
+
+
+        <thead><tr><th>Сотрудник</th><th>Дата</th><th>CallID</th><th>Тон</th><th>Скрипт</th><th>Паразиты</th><th>Комментарий</th></tr></thead>
+
+
+        <tbody></tbody>
+
+
+      </table>
+
+
+    </div>
+
+
+  </section>
+
+
+
+
+
+
+  <!-- TAB: LINKS -->
+
+
+  <section id="tab-links" class="hide">
+
+
+    <div class="card small">
+
+
+      <div class="muted">🔗 Показать ссылки доступа — создание/обновление через меню таблицы</div>
+
+
+      <div id="links-list" style="margin-top:6px"><span class="muted">Загрузка…</span></div>
+
+
+      <button class="btn" id="links-refresh" style="margin-top:8px">🔄 Обновить</button>
+
+
+    </div>
+
+
+  </section>
+
+
+
+
+
+
+  <!-- TAB: LOGS -->
+
+
+  <section id="tab-logs" class="hide">
+
+
+    <div class="card">
+
+
+      <div class="row">
+
+
+        <label>С: <input type="date" id="log-from"></label>
+
+
+        <label>по: <input type="date" id="log-to"></label>
+
+
+        <input id="log-q" placeholder="фильтр" />
+
+
+        <button class="btn" id="log-show">🔄 Обновить</button>
+
+
+        <button class="btn" id="log-clear">🧹 Очистить лог</button>
+
+
+      </div>
+
+
+      <table class="table small" id="tbl-logs">
+
+
+        <thead><tr><th>Время</th><th>Источник</th><th>Действие</th><th>Пользователь</th><th>Сообщение</th><th>Payload</th><th>ErrID</th></tr></thead>
+
+
+        <tbody><tr><td colspan="7" class="muted">Пока пусто</td></tr></tbody>
+
+
+      </table>
+
+
+    </div>
+
+
+  </section>
+
+
+</div>
+
+
+
+
+
+
+<div id="toast" class="toast hide"><div id="toast-msg"></div></div>
+
+
+
+
+
+
+<script>
+
+
+(function(){
+
+
+  // === Context ===
+
+
+  var CTX = { role:"<?= ctx.role || '' ?>", name:"<?= ctx.name || '' ?>", token:"<?= ctx.token || '' ?>", ok: <?= ctx.ok ? 'true' : 'false' ?> };
+
+
+
+
+
+
+  // === Helpers ===
+
+
+  function $(s,r){ return (r||document).querySelector(s); }
+
+
+  function $$(s,r){ return Array.from((r||document).querySelectorAll(s)); }
+
+
+  function sleep(ms){ return new Promise(function(res){ setTimeout(res,ms); }); }
+
+
+  function once(fn,ms){ ms=ms==null?800:ms; var lock=false; return function(){ if(lock) return; lock=true; var a=arguments; return Promise.resolve(fn.apply(null,a)).finally(function(){ setTimeout(function(){lock=false;},ms); }); } }
+
+
+  function norm(s){ return String(s||'').trim().toLowerCase(); }
+
+
+  function fmtDMY(d){ var a=(d||'').slice(0,10).split('-'); return (a[2]||'')+"."+(a[1]||'')+"."+String(a[0]||'').slice(2); }
+
+
+  function toast(msg, kind, silent){ if(silent) return; var t=$("#toast"), m=$("#toast-msg"); m.textContent=msg; t.classList.remove("hide"); t.style.borderColor = kind==="err" ? "#7f1d1d" : (kind==="warn" ? "#6b4a0b" : "#32384a"); setTimeout(function(){ t.classList.add("hide"); }, 3800); }
+
+
+
+
+
+
+  // === RPC with backoff ===
+
+
+  var q=[], busy=false;
+
+
+  function enqueue(fn,args,retries){ args=args||[]; retries=retries==null?2:retries; return new Promise(function(res,rej){ q.push({fn:fn,args:args,retries:retries,res:res,rej:rej}); run(); }); }
+
+
+  function run(){ if(busy||!q.length) return; busy=true; var t=q.shift(); rpc(t.fn,t.args,t.retries).then(t.res).catch(t.rej).finally(function(){ busy=false; if(q.length) run(); }); }
+
+
+  function rpc(fnName,args,retries){
+
+
+    function call(){ return new Promise(function(res,rej){ google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fnName].apply(google.script.run,args); }); }
+
+
+    var a=0; function loop(){ return call().catch(function(e){ var msg=(e&&(e.message||e.toString()))||""; try{ google.script.run.api_frontLog("CLIENT","fail",String(msg), String(e&&e.stack||""), {}); }catch(_){};
+
+
+      if(/429|Too Many|Rate|426/.test(msg) && a<=retries){ var w=Math.min(1500*Math.pow(2,a),5000); a++; return sleep(w).then(loop); }
+
+
+      throw e; }); }
+
+
+    return loop();
+
+
+  }
+
+
+  var API = {
+
+
+    statuses: function(){ return enqueue('api_statuses',[]); },
+
+
+    myStatus:function(){ return enqueue('api_myStatus',[CTX.token]); },
+
+
+    setStatus:function(n,s){ return enqueue('api_setStatusSecure',[n,s,CTX.token]); },
+
+
+    quick:function(ev){ return enqueue('api_quickEventSecure',[ev,CTX.token]); },
+
+
+    dayMenu:function(d){ return enqueue('api_dayMenu',[d]); },
+
+
+    weekGet:function(a){ return enqueue('api_weekGet',[a]); },
+
+
+    weekAuto:function(a){ return enqueue('api_weekAuto',[a]); },
+
+
+    weekClear:function(a){ return enqueue('api_weekClearDraft',[a]); },
+
+
+    weekPub:function(a){ return enqueue('api_weekPublish',[a]); },
+
+
+    weekSetDraft:function(d,n,c){ return enqueue('api_weekSetDraft',[d,n,c]); },
+
+
+    weekReplace:function(d,n,c){ return enqueue('api_weekReplaceRoster',[d,n,c]); },
+
+
+    absList:function(f,t){ return enqueue('api_absList',[f,t]); },
+
+
+    absAdd:function(f,t,n,typ){ return enqueue('api_absAddRange',[f,t,n,typ]); },
+
+
+    staff:function(){ return enqueue('api_staff',[]); },
+
+
+    holSync:function(){ return enqueue('api_holidaysSync',[]); },
+
+
+    qcAvg:function(d){ return enqueue('api_qcAvg',[d==null?14:d]); },
+
+
+    qcList:function(f,t){ return enqueue('api_qcList',[f,t]); },
+
+
+    qcSubmit:function(f){ return enqueue('api_qcSubmit',[f]); },
+
+
+    links:function(){ return enqueue('api_tokens',[]); },
+
+
+    logs:function(f,t,q,lim){ return enqueue('api_errorsList',[f,t,q,200]); },
+
+
+    logClear:function(){ return enqueue('api_errorsClear',[]); },
+
+
+    snapshot:function(d){ return enqueue('api_debug_snapshot',[d]); }
+
+
+  };
+
+
+
+
+
+
+  // === Tabs ===
+
+
+  var tabs=$("#tabs"), sections={statuses:$("#tab-statuses"),roles:$("#tab-roles"),planner:$("#tab-planner"),absences:$("#tab-absences"),qc:$("#tab-qc"),links:$("#tab-links"),logs:$("#tab-logs")};
+
+
+  function setActiveTab(n){ $$(".tab",tabs).forEach(function(b){ b.classList.toggle("active", b.dataset.tab===n); }); Object.keys(sections).forEach(function(k){ sections[k].classList.toggle("hide", k!==n); }); try{ localStorage.setItem("cg_tab",n); }catch(_){} }
+
+
+  tabs.addEventListener("click", function(e){ var b=e.target.closest(".tab"); if(!b) return; setActiveTab(b.dataset.tab); });
+
+
+  setActiveTab((function(){ try{ return localStorage.getItem("cg_tab")||"statuses"; }catch(_){ return "statuses"; }})());
+
+
+
+
+
+
+  // === Quick self status ===
+
+
+  var myStatusLabel=$("#myStatusLabel"), mySpin=$("#myStatusSpin");
+
+
+  var qIn=$("#q-in"), qLunch=$("#q-lunch"), qBreak=$("#q-break"), qLend=$("#q-lunch-end"), qBend=$("#q-break-end"), qOff=$("#q-off");
+
+
+  function setQuickButtonsByStatus(s){
+
+
+    function dis(b,v){ if(!b) return; if(v){ b.setAttribute("disabled","disabled"); } else { b.removeAttribute("disabled"); } }
+
+
+    [qIn,qLunch,qBreak,qLend,qBend,qOff].forEach(function(b){ dis(b,false); });
+
+
+    if(s==="OFF"){ dis(qIn,false); dis(qLunch,true); dis(qBreak,true); dis(qLend,true); dis(qBend,true); dis(qOff,true);}
+
+
+    else if(s==="На линии"){ dis(qIn,true); dis(qLunch,false); dis(qBreak=false,false); dis(qLend=true); dis(qBend=true); dis(qOff,false);}
+
+
+    else if(s==="Обед"){ dis(qIn,true); dis(qLunch=true,true); dis(qBreak=true,true); dis(qLend,false); dis(qBend=true,true); dis(qOff=true,true);}
+
+
+    else if(s==="Перерыв"){ dis(qIn=true,true); dis(qLunch=true,true); dis(qBreak=true,true); dis(qLend=true,true); dis(qBend=false); dis(qOff=true,true);}
+
+
+  }
+
+
+  function statusTextCls(s){ if(s==="На линии") return {t:"✅ На линии", c:"on"}; if(s==="Обед") return {t:"🍽 Обед", c:"lunch"}; if(s==="Перерыв") return {t:"☕ Перерыв", c:"break"}; return {t:"⛔ OFF", c:"off"}; }
+
+
+  function refreshMySelfStatus(silent){
+
+
+    mySpin.classList.remove("hide");
+
+
+    return Promise.all([API.myStatus(), API.qcAvg(14)]).then(function(a){
+
+
+      var ms=a[0]||{}, avg=a[1]||{}; var s=(ms&&ms.status)?ms.status:"OFF"; var map=statusTextCls(s);
+
+
+      myStatusLabel.textContent=map.t; myStatusLabel.className="small status "+map.c; setQuickButtonsByStatus(s);
+
+
+      $("#qcAvgSelf").textContent = (avg && avg[CTX.name]!=null) ? avg[CTX.name] : "—";
+
+
+    }).catch(function(){ if(!silent) toast("Не удалось обновить ваш статус","err"); }).finally(function(){ mySpin.classList.add("hide"); });
+
+
+  }
+
+
+  $("#quick-row").addEventListener("click", function(e){
+
+
+    var b=e.target.closest("[data-act]"); if(!b) return;
+
+
+    var txt=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    API.quick(b.dataset.act).then(function(){ return sleep(350); }).then(function(){ return refreshMySelfStatus(true); }).finally(function(){ b.textContent=txt; b.removeAttribute("disabled"); });
+
+
+  });
+
+
+
+
+
+
+  // === Statuses table (с агрегатами) ===
+
+
+  var tblStatuses=$("#tbl-statuses tbody"), lastAvgMap={};
+
+
+  function statusBadge(s){ var dot='dot-off'; if(/На линии/.test(s)) dot='dot-online'; else if(/Обед/.test(s)) dot='dot-lunch'; else if(/Перерыв/.test(s)) dot='dot-break'; return '<span class="status-dot '+dot+'"></span>'+ (s||'—'); }
+
+
+  function renderRows(rows){
+
+
+    var html = rows.map(function(r){
+
+
+      var key=norm(r.name); var avg=(lastAvgMap && lastAvgMap[r.name]!=null)? lastAvgMap[r.name] : "—";
+
+
+      var mark = r.arriveMark||''; var markEmoji = mark==='ok'?'✅':(mark==='warn'?'⚠️':(mark==='bad'?'⛔':'—'));
+
+
+      return '<tr data-key="'+key+'">'+
+
+
+        '<td>'+r.name+'</td>'+
+
+
+        '<td>'+(r.roleNow||'—')+'</td>'+
+
+
+        '<td data-cell="status">'+statusBadge(r.status||'OFF')+'</td>'+
+
+
+        '<td class="center" data-cell="arrive">'+(r.arriveHHmm||'—')+'</td>'+
+
+
+        '<td class="center" data-cell="mark">'+markEmoji+'</td>'+
+
+
+        '<td class="center" data-cell="lunch">'+(r.lunchMin||0)+'</td>'+
+
+
+        '<td class="center" data-cell="break">'+(r.breakMin||0)+'</td>'+
+
+
+        '<td class="small">'+
+
+
+          '<button class="btn ok act"   data-name="'+r.name+'" data-status="На линии">На линии</button> '+
+
+
+          '<button class="btn warn act" data-name="'+r.name+'" data-status="Обед">Обед</button> '+
+
+
+          '<button class="btn act"      data-name="'+r.name+'" data-status="Перерыв">Перерыв</button> '+
+
+
+          '<button class="btn err act"  data-name="'+r.name+'" data-status="OFF">OFF</button>'+
+
+
+        '</td>'+
+
+
+      '</tr>';
+
+
+    }).join('');
+
+
+    tblStatuses.innerHTML = html || '<tr><td colspan="8" class="muted">Пусто</td></tr>';
+
+
+    rows.forEach(function(r){
+
+
+      var tr = tblStatuses.querySelector('tr[data-key="'+norm(r.name)+'"]');
+
+
+      setRowButtonsByStatus(tr, r.status||"OFF");
+
+
+    });
+
+
+  }
+
+
+  function setRowButtonsByStatus(tr, s){
+
+
+    if(!tr) return;
+
+
+    var btnOn=tr.querySelector('button[data-status="На линии"]'), btnLu=tr.querySelector('button[data-status="Обед"]'), btnBr=tr.querySelector('button[data-status="Перерыв"]'), btnOff=tr.querySelector('button[data-status="OFF"]');
+
+
+    function dis(b,v){ if(!b) return; if(v){ b.setAttribute("disabled","disabled"); } else { b.removeAttribute("disabled"); } }
+
+
+    if(s==="OFF"){ dis(btnOn,false); dis(btnLu,true); dis(btnBr,true); dis(btnOff,true); }
+
+
+    else if(s==="На линии"){ dis(btnOn,true); dis(btnLu=false,false); dis(btnBr=false,false); dis(btnOff,false); }
+
+
+    else if(s==="Обед"){ dis(btnOn,false); dis(btnLu,true); dis(btnBr=true,true); dis(btnOff=true,true); }
+
+
+    else if(s==="Перерыв"){ dis(btnOn=false,false); dis(btnLu=true,true); dis(btnBr=true,true); dis(btnOff=true,true); }
+
+
+  }
+
+
+  function loadStatuses(opts){ opts=opts||{}; var silent=!!opts.silent;
+
+
+    return Promise.all([API.statuses(), API.qcAvg(14)]).then(function(all){
+
+
+      var rows=all[0]||[]; lastAvgMap=all[1]||{}; renderRows(rows);
+
+
+    }).catch(function(){ toast("Не удалось загрузить статусы","err",silent); });
+
+
+  }
+
+
+  $("#btn-refresh").addEventListener("click", once(function(){
+
+
+    var b=$("#btn-refresh"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    return loadStatuses({silent:false}).finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+  $("#btn-snapshot").addEventListener("click", once(function(){
+
+
+    var b=$("#btn-snapshot"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    var d=new Date().toISOString().slice(0,10);
+
+
+    return API.snapshot(d).then(function(r){ toast('OK: statuses='+r.counts.statuses+' roster='+r.counts.rosterToday+' plan='+r.counts.planToday); })
+
+
+      .catch(function(){ toast("Снимок не получен","err"); })
+
+
+      .finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+  // автообновление
+
+
+  var timer=null; $("#autoSync").addEventListener("change", function(e){ if(e.target.checked){ if(timer) clearInterval(timer); timer=setInterval(function(){ loadStatuses({silent:true}); }, 15000); } else { if(timer) clearInterval(timer); timer=null; } });
+
+
+
+
+
+
+  // Row actions
+
+
+  var rowLocks=new Map();
+
+
+  $("#tbl-statuses").addEventListener("click", function(e){
+
+
+    var btn=e.target.closest(".act"); if(!btn) return;
+
+
+    var name=btn.dataset.name, st=btn.dataset.status, key=norm(name), tr=e.target.closest("tr");
+
+
+    if(rowLocks.get(key)) return; rowLocks.set(key,true);
+
+
+    // optimistic
+
+
+    var tdS=tr.querySelector('td[data-cell="status"]'); var prevHtml=tdS.innerHTML;
+
+
+    tdS.innerHTML='<span class="spin"></span> '+st; setRowButtonsByStatus(tr, st);
+
+
+    API.setStatus(name, st).then(function(){ return sleep(350); })
+
+
+      .then(function(){ return Promise.all([API.statuses(), API.qcAvg(14)]); })
+
+
+      .then(function(all){
+
+
+        var rows=all[0]||[]; lastAvgMap=all[1]||{};
+
+
+        var r=rows.find(function(x){ return norm(x.name)===key; });
+
+
+        if(r){
+
+
+          tdS.innerHTML=statusBadge(r.status||'OFF');
+
+
+          tr.children[1].textContent = r.roleNow || '—';
+
+
+          tr.querySelector('[data-cell="arrive"]').textContent = r.arriveHHmm||'—';
+
+
+          tr.querySelector('[data-cell="mark"]').textContent   = (r.arriveMark==='ok'?'✅':(r.arriveMark==='warn'?'⚠️':(r.arriveMark==='bad'?'⛔':'—')));
+
+
+          tr.querySelector('[data-cell="lunch"]').textContent  = r.lunchMin||0;
+
+
+          tr.querySelector('[data-cell="break"]').textContent  = r.breakMin||0;
+
+
+          setRowButtonsByStatus(tr, r.status||"OFF");
+
+
+        } else {
+
+
+          renderRows(rows);
+
+
+        }
+
+
+      }).catch(function(){ tdS.innerHTML=prevHtml; toast("Не удалось установить статус","err"); })
+
+
+      .finally(function(){ rowLocks.set(key,false); });
+
+
+  });
+
+
+
+
+
+
+  // === Roles ===
+
+
+  var rolesDate=$("#roles-date"); rolesDate.value=new Date().toISOString().slice(0,10);
+
+
+  function showRoles(silent){
+
+
+    var b=$("#roles-show"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    var d=rolesDate.value; var box=$("#roles-grid"); box.innerHTML='<span class="muted">Загрузка…</span>';
+
+
+    return API.dayMenu(d).then(function(r){
+
+
+      if(!r||!r.hours||!r.hours.length){ box.innerHTML='<span class="muted">Пусто</span>'; return; }
+
+
+      var rows=r.hours.map(function(h){ var calls=(h.CALLS||[]).join(', ')||'—'; var meet=h.MEET||'—'; return '<tr><td class="time">'+h.from+'–'+h.to+'</td><td>'+calls+'</td><td>'+meet+'</td></tr>'; }).join('');
+
+
+      box.innerHTML='<div class="muted" style="margin-bottom:6px">Дата: '+fmtDMY(d)+'</div><table class="table small"><thead><tr><th style="width:120px">Время</th><th>CALLS</th><th>MEET</th></tr></thead><tbody>'+rows+'</tbody></table>';
+
+
+    }).catch(function(){ box.innerHTML='<span class="muted">Ошибка загрузки</span>'; if(!silent) toast("Не удалось загрузить роли","err"); })
+
+
+      .finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }
+
+
+  $("#roles-show").addEventListener("click", once(function(){ return showRoles(false); }));
+
+
+  $("#roles-snap").addEventListener("click", once(function(){
+
+
+    var b=$("#roles-snap"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    return API.snapshot(rolesDate.value).then(function(r){ toast('Активны сейчас: '+(r.sample.activeNow||[]).length); })
+
+
+      .catch(function(){ toast("Снимок не получен","err"); })
+
+
+      .finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+
+
+
+
+  // === Planner (с подсветкой отсутствий) ===
+
+
+  var weekAnchor=$("#week-anchor"); weekAnchor.value=rolesDate.value;
+
+
+  var SHIFTS=["OFF","9-18","10-19","12-21","10-21"];
+
+
+  function renderPlanner(r){
+
+
+    var box=$("#planner-grid"); if(!r||!r.days){ box.innerHTML='<span class="muted">Пусто</span>'; return; }
+
+
+    var head='<tr><th>Сотрудник</th>'+r.days.map(function(d){return '<th>'+fmtDMY(d)+'</th>';}).join('')+'</tr>';
+
+
+    var body=r.rows.map(function(row){
+
+
+      var tds=row.days.map(function(code,i){
+
+
+        var d=r.days[i]; var abs=(row.abs&&row.abs[i])||"";
+
+
+        if(abs){
+
+
+          var cls = abs==="SICK" ? "abs-cell abs-sick badge" : "abs-cell badge";
+
+
+          return '<td class="'+cls+'" data-abs="'+(abs==='SICK'?'SICK':'VACATION')+'">—</td>';
+
+
+        }
+
+
+        var opts=SHIFTS.map(function(opt){ var sel=opt===code?' selected':''; return '<option value="'+opt+'"'+sel+'>'+opt+'</option>'; }).join('');
+
+
+        return '<td class="center plan-cell" data-name="'+row.name+'" data-date="'+d+'"><select>'+opts+'</select></td>';
+
+
+      }).join('');
+
+
+      return '<tr><td>'+row.name+'</td>'+tds+'</tr>';
+
+
+    }).join('');
+
+
+    box.innerHTML='<table class="table small"><thead>'+head+'</thead><tbody>'+body+'</tbody></table>';
+
+
+    $$("#planner-grid select").forEach(function(sel){
+
+
+      sel.addEventListener("change", function(e){
+
+
+        var td=e.target.closest(".plan-cell"); var name=td.dataset.name; var d=td.dataset.date; var code=e.target.value;
+
+
+        $("#planner-dirty").textContent="Есть несохранённые изменения";
+
+
+        e.target.setAttribute("disabled","disabled");
+
+
+        API.weekSetDraft(d,name,code).catch(function(){ toast("Не удалось записать черновик","err"); })
+
+
+          .finally(function(){ e.target.removeAttribute("disabled"); });
+
+
+      });
+
+
+    });
+
+
+  }
+
+
+  $("#week-show").addEventListener("click", once(function(){
+
+
+    var b=$("#week-show"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    return API.weekGet(weekAnchor.value).then(function(r){ $("#planner-dirty").textContent="Нет несохранённых изменений"; renderPlanner(r); })
+
+
+      .finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+  $("#week-auto").addEventListener("click", once(function(){
+
+
+    var b=$("#week-auto"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    return API.weekAuto(weekAnchor.value).then(function(){ toast("Черновик недели сгенерирован"); $("#week-show").click(); })
+
+
+      .finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+  $("#week-clear").addEventListener("click", once(function(){
+
+
+    var b=$("#week-clear"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    return API.weekClear(weekAnchor.value).then(function(){ toast("Черновик очищен"); $("#week-show").click(); })
+
+
+      .finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+  $("#week-publish").addEventListener("click", once(function(){
+
+
+    var b=$("#week-publish"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    return API.weekPub(weekAnchor.value).then(function(){ toast("Roster перезаписан"); })
+
+
+      .finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+
+
+
+
+  // === Absences ===
+
+
+  function fillStaffSelect(selId){
+
+
+    var sel=$(selId); sel.innerHTML='<option value="">Сотрудник…</option>';
+
+
+    return API.staff().then(function(list){ (list||[]).forEach(function(s){ var o=document.createElement('option'); o.value=s.name; o.textContent=s.name; sel.appendChild(o); }); });
+
+
+  }
+
+
+  fillStaffSelect("#abs-name");
+
+
+  $("#abs-show").addEventListener("click", once(function(){
+
+
+    var b=$("#abs-show"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    var f=$("#abs-from").value||"2000-01-01", tmax=$("#abs-to").value||"2100-01-01", tb=$("#tbl-abs tbody");
+
+
+    tb.innerHTML='<tr><td colspan="3" class="muted">Загрузка…</td></tr>';
+
+
+    return API.absList(f,tmax).then(function(rows){
+
+
+      tb.innerHTML = rows.map(function(r){ return '<tr><td class="time">'+fmtDMY(r.date)+'</td><td>'+r.name+'</td><td>'+r.type+'</td></tr>'; }).join('') || '<tr><td colspan="3" class="muted">Пусто</td></tr>';
+
+
+    }).finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+  $("#abs-add").addEventListener("click", once(function(){
+
+
+    var b=$("#abs-add"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    var f=$("#abs-from").value, tmax=$("#abs-to").value, n=$("#abs-name").value, typ=$("#abs-type").value;
+
+
+    if(!f||!tmax||!n){ toast("Заполните диапазон и имя","warn"); b.textContent=t; b.removeAttribute("disabled"); return; }
+
+
+    return API.absAdd(f,tmax,n,typ).then(function(){ toast("Диапазон добавлен"); $("#abs-show").click(); })
+
+
+      .finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+  $("#hol-sync").addEventListener("click", once(function(){
+
+
+    var b=$("#hol-sync"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    return API.holSync().then(function(){ toast("Праздники синхронизированы"); })
+
+
+      .finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+
+
+
+
+  // === QC ===
+
+
+  function fillQCSelects(){
+
+
+    var de=$("#qc-emp"), dr=$("#qc-rev"); de.innerHTML='<option value="">Сотрудник…</option>'; dr.innerHTML='<option value="">Проверяющий…</option>';
+
+
+    return API.staff().then(function(list){ (list||[]).forEach(function(s){ var o1=document.createElement('option'); o1.value=s.name; o1.textContent=s.name; de.appendChild(o1); var o2=document.createElement('option'); o2.value=s.name; o2.textContent=s.name; dr.appendChild(o2); }); });
+
+
+  }
+
+
+  $("#qc-show").addEventListener("click", once(function(){
+
+
+    var b=$("#qc-show"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    var d=new Date().toISOString().slice(0,10); var tb=$("#tbl-qc tbody"); tb.innerHTML='<tr><td colspan="7" class="muted">Загрузка…</td></tr>';
+
+
+    return API.qcList(d,d).then(function(rows){
+
+
+      tb.innerHTML = rows.map(function(r){ return '<tr><td>'+r.employee+'</td><td class="time">'+fmtDMY(r.date)+'</td><td>'+r.callId+'</td><td class="center">'+r.tone+'</td><td class="center">'+r.script+'</td><td class="center">'+r.parasites+'</td><td>'+(r.comment||'')+'</td></tr>'; }).join('') || '<tr><td colspan="7" class="muted">Нет оценок за сегодня</td></tr>';
+
+
+    }).finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+  $("#qc-save").addEventListener("click", once(function(){
+
+
+    var b=$("#qc-save"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    var f={ employee:$("#qc-emp").value, reviewer:$("#qc-rev").value, date:$("#qc-date").value || new Date().toISOString().slice(0,10), callId:$("#qc-call").value,
+
+
+            tone:+($("#qc-tone").value||0), script:+($("#qc-script").value||0), parasites:+($("#qc-par").value||0), comment:$("#qc-comment").value };
+
+
+    if(!f.employee||!f.reviewer){ toast("Выберите сотрудника и проверяющего","warn"); b.textContent=t; b.removeAttribute("disabled"); return; }
+
+
+    return API.qcSubmit(f).then(function(){ toast("QC сохранён"); $("#qc-show").click(); })
+
+
+      .finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+
+
+
+
+  // === Links ===
+
+
+  $("#links-refresh").addEventListener("click", once(function(){
+
+
+    var b=$("#links-refresh"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    var box=$("#links-list"); box.innerHTML='<span class="muted">Загрузка…</span>';
+
+
+    return API.links().then(function(list){
+
+
+      box.innerHTML=(list||[]).map(function(x){ var badge=x.active?'✅':'⛔';
+
+
+        return '<div class="row small" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0">'+
+
+
+          '<div>'+badge+' '+x.role+' — <b>'+x.name+'</b></div>'+
+
+
+          '<div><a class="small" style="color:var(--link)" href="'+x.url+'" target="_blank" rel="noopener">Открыть</a></div></div>'; }).join('') || '<span class="muted">Пусто</span>';
+
+
+    }).finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+
+
+
+
+  // === Logs ===
+
+
+  $("#log-show").addEventListener("click", once(function(){
+
+
+    var b=$("#log-show"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    var f=$("#log-from").value||"2000-01-01", tmax=$("#log-to").value||"2100-01-01", q=$("#log-q").value||"", tb=$("#tbl-logs tbody");
+
+
+    tb.innerHTML='<tr><td colspan="7" class="muted">Загрузка…</td></tr>';
+
+
+    return API.logs(f,tmax,q,200).then(function(rows){
+
+
+      tb.innerHTML = rows.map(function(r){ return '<tr>'+
+
+
+        '<td class="small">'+String(r.ts||'').replace('T',' ')+'</td>'+
+
+
+        '<td class="small">'+(r.source||'')+'</td>'+
+
+
+        '<td class="small">'+(r.action||'')+'</td>'+
+
+
+        '<td class="small">'+(r.user||'')+'</td>'+
+
+
+        '<td class="small">'+(r.message||'')+'</td>'+
+
+
+        '<td class="small">'+(r.payload||'')+'</td>'+
+
+
+        '<td class="small">'+(r.errId||'')+'</td></tr>'; }).join('') || '<tr><td colspan="7" class="muted">Пусто</td></tr>';
+
+
+    }).finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+  $("#log-clear").addEventListener("click", once(function(){
+
+
+    var b=$("#log-clear"), t=b.textContent; b.textContent="…"; b.setAttribute("disabled","disabled");
+
+
+    return API.logClear().then(function(){ toast("Лог очищен"); $("#log-show").click(); })
+
+
+      .finally(function(){ b.textContent=t; b.removeAttribute("disabled"); });
+
+
+  }));
+
+
+
+
+
+
+  // init
+
+
+  function fillStaffForQC(){ return (function(){ var de=$("#qc-emp"), dr=$("#qc-rev"); de.innerHTML='<option value="">Сотрудник…</option>'; dr.innerHTML='<option value="">Проверяющий…</option>';
+
+
+    return API.staff().then(function(list){ (list||[]).forEach(function(s){ var o1=document.createElement('option'); o1.value=s.name; o1.textContent=s.name; de.appendChild(o1); var o2=document.createElement('option'); o2.value=s.name; o2.textContent=s.name; dr.appendChild(o2); }); }); })(); }
+
+
+  fillStaffForQC();
+
+
+  Promise.all([refreshMySelfStatus(true), loadStatuses({silent:true})]).then(function(){});
+
+
+})();
+
+
+</script>
+
+
+</body>
+
+
+</html>
+
