@@ -1,0 +1,1 @@
+# cg-secretary-panel
